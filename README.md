@@ -1,6 +1,6 @@
 # Job Alert Digest (n8n)
 
-Automated pipeline that turns messy LinkedIn/Indeed job alert emails into a clean, deduplicated Google Sheet of Working Student & Internship postings — no manual scrolling through Gmail required.
+Automated pipeline that turns messy LinkedIn/Indeed job alert emails into a clean, deduplicated Google Sheet of Working Student & Internship postings - no manual scrolling through Gmail required.
 
 ## What it does
 
@@ -10,7 +10,7 @@ Every day at 3 PM, the workflow:
 2. **Parses** the raw email text into structured postings (title, company, location, link)
 3. **Filters** to keep only Working Student / Intern roles, dropping anything with a hard German-language requirement
 4. **Deduplicates** postings that show up across multiple overlapping saved searches
-5. **Caps growth** — clears older entries once the sheet passes 50 rows, so it never gets unmanageable
+5. **Caps growth** - clears older entries once the sheet passes 50 rows, so it never gets unmanageable
 6. **Appends** new results to Google Sheets and **emails a summary notification**
 
 ## Why
@@ -19,10 +19,10 @@ Job alert emails are noisy, repetitive, and easy to miss in a crowded inbox. Thi
 
 ## Stack
 
-- **n8n** — workflow orchestration (Schedule Trigger, Gmail, Code, Google Sheets nodes)
-- **JavaScript** (Code nodes) — email parsing, filtering, and dedup logic
-- **Google Sheets API** — persistent storage
-- **Gmail API** — source data + notifications
+- **n8n** - workflow orchestration (Schedule Trigger, Gmail, Code, Google Sheets nodes)
+- **JavaScript** (Code nodes) - email parsing, filtering, and dedup logic
+- **Google Sheets API** - persistent storage
+- **Gmail API** - source data + notifications
 
 ## Setup
 
