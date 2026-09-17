@@ -1,0 +1,333 @@
+{
+  "name": "Daily Job Alter Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ac2520b6-f123-4ebd-8c70-ee901023871d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "Label_220072452718914395"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7419b191-a0e1-4e78-8498-7995cdf85865",
+      "name": "Get many messages",
+      "webhookId": "98babd07-9bdc-42cd-bba6-579c88b1acbb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zlTKCYcmn9NpmInB",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/18YTI4KhnazKiQRu48XYwnWNqdN1iIcyddWPzq03_OnQ",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/18YTI4KhnazKiQRu48XYwnWNqdN1iIcyddWPzq03_OnQ/edit?pli=1&gid=0#gid=0",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Company": "={{ $json.company }}",
+            "Position": "={{ $json.position }}",
+            "Title": "={{ $json.title }}",
+            "Location": "={{ $json.location }}",
+            "Link": "={{ $json.link }}"
+          },
+          "matchingColumns": [
+            "Link"
+          ],
+          "schema": [
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Position",
+              "displayName": "Position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1360,
+        0
+      ],
+      "id": "fe89f980-9aab-45f1-a0aa-4b94bb966e11",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CC9JU6kf2yqW456f",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "yourmailid.com",
+        "subject": "Job posting across linkedIn and Indeed from n8n",
+        "emailType": "text",
+        "message": "New job postings have been added to your tracker.\n\n\nView the sheet:link to the spreadsheet",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1584,
+        0
+      ],
+      "id": "355a2864-6e46-441a-84bc-9f6ca27e11bf",
+      "name": "Send a message",
+      "webhookId": "2b7b5d8c-05de-4eba-936f-f3fd863193a5",
+      "executeOnce": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zlTKCYcmn9NpmInB",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\nconst activityLinePattern = /actively hiring|actively recruiting|alumni|alum$/i;\n\nconst germanRequirementPhrases = [\n  \"fließend deutsch\",\n  \"sehr gute deutschkenntnisse\",\n  \"gute deutschkenntnisse\",\n  \"gute kenntnisse in deutsch\",\n  \"deutsch als muttersprache\",\n  \"muttersprachliches deutsch\",\n  \"verhandlungssicheres deutsch\",\n  \"deutschkenntnisse zwingend\",\n  \"deutsch c1\",\n  \"deutsch c2\"\n];\n\nfunction getPositionType(title) {\n  const t = title.toLowerCase();\n  if (t.includes('werkstudent') || t.includes('working student')) return 'Working Student';\n  if (t.includes('praktikant') || t.includes('internship') || /\\bintern\\b/.test(t)) return 'Intern';\n  return null;\n}\n\nfor (const item of items) {\n  const text = item.json.text;\n  const isLinkedIn = item.json.from.value[0].address.includes('linkedin.com');\n  const isIndeed = item.json.from.value[0].address.includes('indeed.com');\n\n  const candidates = [];\n\n  if (isLinkedIn) {\n    const blocks = text.split('---------------------------------------------------------');\n    for (const block of blocks) {\n      const lines = block.trim().split('\\n').filter(l => l.trim());\n      const linkMatch = block.match(/View job: (https:\\/\\/[^\\s]+)/);\n      if (!linkMatch) continue;\n\n      const viewJobIdx = lines.findIndex(l => l.startsWith('View job:'));\n      if (viewJobIdx < 3) continue;\n\n      let idx = viewJobIdx - 1;\n      if (activityLinePattern.test(lines[idx])) idx--;\n\n      const location = lines[idx];\n      const company = lines[idx - 1];\n      const title = lines[idx - 2];\n      if (!title || !company || !location) continue;\n\n      candidates.push({\n        title: title.trim(),\n        company: company.trim(),\n        location: location.trim(),\n        link: linkMatch[1],\n        description: block\n      });\n    }\n  }\n\n  if (isIndeed) {\n    const blocks = text.split('\\n\\n').filter(b => b.trim());\n    for (const block of blocks) {\n      const lines = block.trim().split('\\n').filter(l => l.trim());\n      if (lines.length < 3) continue;\n\n      const linkLine = lines.find(l => l.startsWith('https://'));\n      if (!linkLine || linkLine.includes('/pagead/')) continue;\n\n      const companyLocation = lines[1]?.split(' - ') || [];\n\n      candidates.push({\n        title: lines[0].trim(),\n        company: companyLocation[0]?.trim() || '',\n        location: companyLocation[1]?.trim() || '',\n        link: linkLine,\n        description: block\n      });\n    }\n  }\n\n  for (const c of candidates) {\n    const positionType = getPositionType(c.title);\n    if (!positionType) continue;\n\n    const desc = c.description.toLowerCase();\n    const hasStrictGermanReq = germanRequirementPhrases.some(p => desc.includes(p));\n    if (hasStrictGermanReq) continue;\n\n    results.push({\n      json: {\n        company: c.company,\n        position: positionType,\n        title: c.title,\n        location: c.location,\n        link: c.link\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "f8bc3e96-9711-4176-8761-0e24bb183d4f",
+      "name": "structing the data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst seen = new Set();\nconst results = [];\n\nfunction getJobKey(link) {\n  const linkedInMatch = link.match(/\\/jobs\\/view\\/(\\d+)/);\n  if (linkedInMatch) return `li_${linkedInMatch[1]}`;\n\n  const indeedMatch = link.match(/[?&]jk=([a-zA-Z0-9]+)/);\n  if (indeedMatch) return `in_${indeedMatch[1]}`;\n\n  return null;\n}\n\nfor (const item of items) {\n  const { title, company, link } = item.json;\n\n  let key = getJobKey(link);\n  if (!key) {\n    key = `${title}|${company}`.toLowerCase().trim();\n  }\n\n  if (seen.has(key)) continue;\n  seen.add(key);\n\n  results.push(item);\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "c89adaaf-be0e-4624-88a3-ba96889fd434",
+      "name": "Keep only unique"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/18YTI4KhnazKiQRu48XYwnWNqdN1iIcyddWPzq03_OnQ",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/18YTI4KhnazKiQRu48XYwnWNqdN1iIcyddWPzq03_OnQ/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        0
+      ],
+      "id": "6229db37-6018-42a2-ba87-6b6587607a54",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CC9JU6kf2yqW456f",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rowCount = $input.all().length;\nreturn [{ json: { shouldClear: rowCount > 75 } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        0
+      ],
+      "id": "9a424b20-0f73-4e87-94d0-012292140db2",
+      "name": "Cleaning up"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "structing the data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "structing the data": {
+      "main": [
+        [
+          {
+            "node": "Keep only unique",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep only unique": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Cleaning up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleaning up": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e0789a6a-3c7a-4199-bf03-1146ef6137bc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a06c063ced9fa7905307ae4750bf99e5935801a1f994706fd369e5096dec80c3"
+  },
+  "nodeGroups": [],
+  "id": "hCgtECupfKxwcrOu",
+  "tags": []
+}
