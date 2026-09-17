@@ -53,12 +53,12 @@
         "operation": "appendOrUpdate",
         "documentId": {
           "__rl": true,
-          "value": "https://docs.google.com/spreadsheets/d/18YTI4KhnazKiQRu48XYwnWNqdN1iIcyddWPzq03_OnQ",
+          "value": "link_to_your_spreadsheet_document",
           "mode": "url"
         },
         "sheetName": {
           "__rl": true,
-          "value": "https://docs.google.com/spreadsheets/d/18YTI4KhnazKiQRu48XYwnWNqdN1iIcyddWPzq03_OnQ/edit?pli=1&gid=0#gid=0",
+          "value": "link_to_your_spreadsheet",
           "mode": "url"
         },
         "columns": {
@@ -198,12 +198,12 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "https://docs.google.com/spreadsheets/d/18YTI4KhnazKiQRu48XYwnWNqdN1iIcyddWPzq03_OnQ",
+          "value": "link_to_your spreadsheet_document",
           "mode": "url"
         },
         "sheetName": {
           "__rl": true,
-          "value": "https://docs.google.com/spreadsheets/d/18YTI4KhnazKiQRu48XYwnWNqdN1iIcyddWPzq03_OnQ/edit?gid=0#gid=0",
+          "value": "link_to_your_spreadsheet",
           "mode": "url"
         },
         "options": {}
